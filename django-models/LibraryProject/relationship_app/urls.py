@@ -10,12 +10,12 @@ urlpatterns = [
     path('login/', LoginView.as_view(template_name='relationship_app/login.html'), name='login'),
     path('logout/', LogoutView.as_view(template_name='relationship_app/logout.html'), name='logout'),
     path('register/', views.register, name='register'),
-    
+
     path('admin-view/', views.admin_view, name='admin-view'),
     path('librarian-view/', views.librarian_view, name='librarian-view'),
     path('member-view/', views.member_view, name='member-view'),
 
-    path('books/add/', views.add_book_view, name='add-book'),
-    path('books/<int:pk>/edit/', views.edit_book_view, name='edit-book'),
-    path('books/<int:pk>/delete/', views.delete_book_view, name='delete-book'),
+    path('books/add/', views.add_book_view, name='add_book'),
+    path('books/<int:pk>/edit/', views.edit_book_view, name='edit_book'),
+    path('books/<int:pk>/delete/', views.delete_book_view, name='delete_book'),
 ]
