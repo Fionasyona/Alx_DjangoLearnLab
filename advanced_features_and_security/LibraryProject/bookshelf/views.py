@@ -3,7 +3,8 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import permission_required
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Book
-from .forms import BookForm, ExampleForm 
+from .forms import BookForm
+from .forms import ExampleForm 
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import permission_required
 from django.db.models import Q
@@ -57,3 +58,16 @@ def search_books(request):
     query = request.GET.get('q')
     books = Book.objects.filter(title__icontains=query) if query else []
     return render(request, 'bookshelf/book_list.html', {'books': books})
+
+@csrf_protect
+@permission_required('bookshelf.can_create', raise_exception=True)
+def example_form_view(request):
+    if request.method == 'POST':
+        form = ExampleForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('book_list')  # or another success page
+    else:
+        form = ExampleForm()
+    return render(request, 'bookshelf/form_example.html', {'form': form})
+
