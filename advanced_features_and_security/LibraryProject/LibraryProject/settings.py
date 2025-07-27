@@ -150,3 +150,29 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+# ===============================
+# 🔐 Django HTTPS Security Settings
+# ===============================
+
+# ✅ Enforce HTTPS Redirects
+SECURE_SSL_REDIRECT = True  # Redirect all HTTP requests to HTTPS
+
+# ✅ HTTP Strict Transport Security (HSTS)
+SECURE_HSTS_SECONDS = 31536000  # Enforce HTTPS for 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to all subdomains
+SECURE_HSTS_PRELOAD = True  # Preload into browser HSTS list
+
+# ✅ Secure Cookies Only Over HTTPS
+SESSION_COOKIE_SECURE = True  # Session cookies sent only via HTTPS
+CSRF_COOKIE_SECURE = True  # CSRF cookies sent only via HTTPS
+
+# ✅ Secure Headers
+SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent MIME-sniffing
+SECURE_BROWSER_XSS_FILTER = True  # Enable XSS protection in browsers
+X_FRAME_OPTIONS = "DENY"  # Prevent clickjacking (deny embedding in iframes)
+
+# Recommended for CSRF protection in production
+# Replace 'yourdomain.com' with your actual HTTPS domain
+CSRF_TRUSTED_ORIGINS = ['https://yourdomain.com']
+
+
