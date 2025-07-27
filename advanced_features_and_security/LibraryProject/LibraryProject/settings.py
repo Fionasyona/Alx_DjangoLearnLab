@@ -171,6 +171,10 @@ SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent MIME-sniffing
 SECURE_BROWSER_XSS_FILTER = True  # Enable XSS protection in browsers
 X_FRAME_OPTIONS = "DENY"  # Prevent clickjacking (deny embedding in iframes)
 
+# Trust X-Forwarded-Proto header to determine HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
 # Recommended for CSRF protection in production
 # Replace 'yourdomain.com' with your actual HTTPS domain
 CSRF_TRUSTED_ORIGINS = ['https://yourdomain.com']
