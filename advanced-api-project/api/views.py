@@ -1,33 +1,34 @@
-from rest_framework import generics, permissions
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from .models import Book
 from .serializers import BookSerializer
 
-# 📘 View for listing all books
+# 📘 View to list all books (public)
 class BookListView(generics.ListAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.AllowAny]  # Anyone can view
+    permission_classes = [AllowAny]  # Anyone can view
 
-# 📘 View for retrieving a single book by ID
+# 📘 View to retrieve a single book (public)
 class BookDetailView(generics.RetrieveAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.AllowAny]  # Anyone can view
+    permission_classes = [AllowAny]  # Anyone can view
 
-# 📘 View for creating a new book (authenticated users only)
+# 📘 View to create a new book (authenticated only)
 class BookCreateView(generics.CreateAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]  # Authenticated users only
+    permission_classes = [IsAuthenticated]  # Authenticated only
 
-# 📘 View for updating an existing book (authenticated users only)
+# 📘 View to update an existing book (authenticated only)
 class BookUpdateView(generics.UpdateAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]  # Authenticated users only
+    permission_classes = [IsAuthenticated]  # Authenticated only
 
-# 📘 View for deleting a book (authenticated users only)
+# 📘 View to delete a book (authenticated only)
 class BookDeleteView(generics.DestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]  # Authenticated users only
+    permission_classes = [IsAuthenticated]  # Authenticated only
