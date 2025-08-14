@@ -2,6 +2,7 @@
 {% block title %}All Posts{% endblock %}
 {% block content %}
   <h1>All Posts</h1>
+  
 
   {% if user.is_authenticated %}
     <p><a href="{% url 'blog:post-create' %}" class="btn">Create New Post</a></p>
@@ -12,6 +13,14 @@
       <h2><a href="{% url 'blog:post-detail' post.pk %}">{{ post.title }}</a></h2>
       <p class="meta">By {{ post.author.username }} — {{ post.published_date|date:"M d, Y H:i" }}</p>
       <p>{{ post.content|truncatechars:200 }}</p>
+      <p>
+    <strong>Tags:</strong>
+    {% for tag in post.tags.all %}
+        <a href="{% url 'blog:posts-by-tag' tag.name %}">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
+    {% empty %}
+        No tags
+    {% endfor %}
+</p>
       <p><a href="{% url 'blog:post-detail' post.pk %}">Read more →</a></p>
     </article>
   {% empty %}

@@ -69,11 +69,12 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        form.instance.post = get_object_or_404(Post, pk=self.kwargs['post_id'])
+        form.instance.post = get_object_or_404(Post, pk=self.kwargs['pk'])
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('post_detail', kwargs={'pk': self.kwargs['post_id']})
+        return reverse('blog:post-detail', kwargs={'pk': self.kwargs['pk']})
+
 
 # Update a comment
 class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -85,7 +86,9 @@ class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return self.request.user == comment.author
 
     def get_success_url(self):
-        return reverse('post_detail', kwargs={'pk': self.object.post.pk})
+        return reverse('blog:post-detail', kwargs={'pk': self.object.post.pk})
+
+
 
 # Delete a comment
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -96,7 +99,7 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.request.user == comment.author
 
     def get_success_url(self):
-        return reverse('post_detail', kwargs={'pk': self.object.post.pk})
+        return reverse('blog:post-detail', kwargs={'pk': self.object.post.pk})
 
 # User registration
 def register(request):

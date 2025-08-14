@@ -2,6 +2,14 @@
 {% block title %}{% if object %}Edit Post{% else %}New Post{% endif %}{% endblock %}
 {% block content %}
   <h1>{% if object %}Edit Post{% else %}New Post{% endif %}</h1>
+  <p>
+        <strong>Tags:</strong>
+        {% for tag in post.tags.all %}
+            <a href="{% url 'blog:posts-by-tag' tag.name %}">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
+        {% empty %}
+            No tags
+        {% endfor %}
+    </p>
 
   <form method="post">
     {% csrf_token %}
