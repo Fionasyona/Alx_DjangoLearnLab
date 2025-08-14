@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import Post, Comment
 from .forms import RegisterForm, ProfileForm, PostForm, CommentForm
+from taggit.models import Tag
 
 # List all posts (public)
 class PostListView(ListView):
@@ -126,3 +127,7 @@ def profile(request):
     else:
         form = ProfileForm(instance=request.user.profile)
     return render(request, "auth/profile.html", {"form": form})
+def posts_by_tag(request, tag_name):
+    tag = get_object_or_404(Tag, name=tag_name)
+    posts = Post.objects.filter(tags__name__in=[tag_name])
+    return render(request, 'blog/listing.html', {'tag': tag, 'posts': posts})
