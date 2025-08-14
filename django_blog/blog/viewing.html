@@ -13,6 +13,8 @@
       </p>
     {% endif %}
 
+    {% include 'comments_section.html' %}  {# ✅ Added here #}
+
     <p><a href="{% url 'blog:post-list' %}">Back to posts</a></p>
   </article>
 {% endblock %}

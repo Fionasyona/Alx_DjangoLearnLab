@@ -1,0 +1,37 @@
+<section class="comments">
+  <h2>Comments</h2>
+
+  {% if post.comments.all %}
+    {% for comment in post.comments.all %}
+      <div class="comment">
+        <p class="comment-content">{{ comment.content|linebreaks }}</p>
+        <p class="comment-meta">
+          — {{ comment.author.username }},
+          {{ comment.created_at|date:"M d, Y H:i" }}
+          {% if comment.updated_at != comment.created_at %}
+            (edited)
+          {% endif %}
+          {% if user == comment.author %}
+            | <a href="{% url 'comment_edit' comment.pk %}">Edit</a>
+            | <a href="{% url 'comment_delete' comment.pk %}">Delete</a>
+          {% endif %}
+        </p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No comments yet. Be the first to comment!</p>
+  {% endif %}
+
+  {% if user.is_authenticated %}
+    <div class="comment-form">
+      <h3>Leave a Comment</h3>
+      <form method="post" action="{% url 'comment_add' post.pk %}">
+        {% csrf_token %}
+        {{ comment_form.as_p }}
+        <button type="submit">Post Comment</button>
+      </form>
+    </div>
+  {% else %}
+    <p><a href="{% url 'login' %}">Log in</a> to post a comment.</p>
+  {% endif %}
+</section>
