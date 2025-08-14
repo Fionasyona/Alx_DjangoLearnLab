@@ -1,0 +1,33 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>{% block title %}Django Blog{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+  <nav class="nav">
+    <a href="{% url 'blog:profile' %}">Profile</a>
+    {% if user.is_authenticated %}
+      <span>Hi, {{ user.username }}!</span>
+      <a href="{% url 'blog:logout' %}">Logout</a>
+    {% else %}
+      <a href="{% url 'blog:login' %}">Login</a>
+      <a href="{% url 'blog:register' %}">Register</a>
+    {% endif %}
+  </nav>
+
+  {% if messages %}
+    <ul class="messages">
+      {% for m in messages %}
+        <li class="msg {{ m.tags }}">{{ m }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

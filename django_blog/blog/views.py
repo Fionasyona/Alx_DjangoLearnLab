@@ -1,40 +1,34 @@
 from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
-from .models import Profile
+from .forms import RegisterForm, ProfileForm
+from django.http import HttpResponse
 
 def home(request):
-    return render(request, 'home.html')
+    return HttpResponse("Welcome to the blog!")
+
 
 def register(request):
-    if request.method == 'POST':
-        form = UserRegisterForm(request.POST)
+    if request.method == "POST":
+        form = RegisterForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Your account has been created. You can now log in.")
-            return redirect('login')
-        messages.error(request, "Please fix the errors below.")
+            user = form.save()
+            messages.success(request, "Your account was created. Welcome!")
+            login(request, user)  # auto-login after register
+            return redirect("blog:profile")
     else:
-        form = UserRegisterForm()
-    return render(request, 'registration/register.html', {'form': form})
+        form = RegisterForm()
+    return render(request, "auth/register.html", {"form": form})
 
 @login_required
 def profile(request):
-    # Ensure a profile exists (extra safety)
-    Profile.objects.get_or_create(user=request.user)
-
-    if request.method == 'POST':
-        u_form = UserUpdateForm(request.POST, instance=request.user)
-        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
-        if u_form.is_valid() and p_form.is_valid():
-            u_form.save()
-            p_form.save()
+    if request.method == "POST":
+        form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        if form.is_valid():
+            form.save()
             messages.success(request, "Profile updated successfully.")
-            return redirect('profile')
-        messages.error(request, "Please correct the errors below.")
+            return redirect("blog:profile")
     else:
-        u_form = UserUpdateForm(instance=request.user)
-        p_form = ProfileUpdateForm(instance=request.user.profile)
-
-    return render(request, 'registration/profile.html', {'u_form': u_form, 'p_form': p_form})
+        form = ProfileForm(instance=request.user.profile)
+    return render(request, "auth/profile.html", {"form": form})
