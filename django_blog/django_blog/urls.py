@@ -11,6 +11,8 @@ def home(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),  # Root URL will now work
+     path("", include(("blog.urls", "blog"), namespace="blog")),  # home -> posts list
+    # auth urls if you use Django auth views:
 
     # Blog routes (only if you have a blog app)
     # path('', include('blog.urls')),  # Uncomment when ready
