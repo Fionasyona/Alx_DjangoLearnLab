@@ -1,12 +1,13 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from . import views
+from .import views
+from .views import  PostListView,PostDetailView,PostDeleteView,PostCreateView,PostUpdateView
 
 app_name = "blog"
 
 urlpatterns = [
     # Auth
-    path("", views.home, name="home"),
+
     path("login/",  auth_views.LoginView.as_view(
         template_name="registration/login.html"
     ), name="login"),
@@ -15,12 +16,10 @@ urlpatterns = [
     ), name="logout"),
     path("register/", views.register, name="register"),
     path("profile/", views.profile, name="profile"),
-      path("posts/", views.PostListView.as_view(), name="post-list"),
-    path("posts/new/", views.PostCreateView.as_view(), name="post-create"),
-    path("posts/<int:pk>/", views.PostDetailView.as_view(), name="post-detail"),
-    path("posts/<int:pk>/edit/", views.PostUpdateView.as_view(), name="post-update"),
-    path("posts/<int:pk>/delete/", views.PostDeleteView.as_view(), name="post-delete"),
-    # You can add a site root redirect or home if desired:
-    path("", views.PostListView.as_view(), name="home"),
+    path('', PostListView.as_view(), name='post-list'),  # List all posts
+    path('post/<int:pk>/', PostDetailView.as_view(), name='post-detail'),  # View one post
+    path('post/new/', PostCreateView.as_view(), name='post-create'),  # Create post
+    path('post/<int:pk>/update/', PostUpdateView.as_view(), name='post-update'),  # Edit post
+    path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post-delete'),  # Delete post
 
 ]
