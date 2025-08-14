@@ -64,6 +64,20 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 def home(request):
     return HttpResponse("Welcome to the blog!")
 
+class PostByTagListView(ListView):
+    model = Post
+    template_name = 'blog/listing.html'  # reuse your post list template
+    context_object_name = 'posts'
+
+    def get_queryset(self):
+        tag_slug = self.kwargs.get('tag_slug')
+        return Post.objects.filter(tags__slug=tag_slug).distinct()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tag_slug'] = self.kwargs.get('tag_slug')
+        return context
+
 # Create a comment
 class CommentCreateView(LoginRequiredMixin, CreateView):
     model = Comment
