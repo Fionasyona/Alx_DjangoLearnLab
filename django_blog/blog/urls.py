@@ -16,13 +16,16 @@ urlpatterns = [
     ), name="logout"),
     path("register/", views.register, name="register"),
     path("profile/", views.profile, name="profile"),
+
     path('', PostListView.as_view(), name='post-list'),  # List all posts
     path('post/<int:pk>/', PostDetailView.as_view(), name='post-detail'),  # View one post
     path('post/new/', PostCreateView.as_view(), name='post-create'),  # Create post
     path('post/<int:pk>/update/', PostUpdateView.as_view(), name='post-update'),  # Edit post
     path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post-delete'),  # Delete post
-    path('posts/<int:post_id>/comments/new/', CommentCreateView.as_view(), name='comment_add'),
+    path('posts/<int:post_id>/comments/new/', CommentCreateView.as_view(), name='comment_create'),
+
     path('comments/<int:pk>/edit/', CommentUpdateView.as_view(), name='comment_edit'),
+    path('comment/<int:pk>/update/', views.CommentUpdateView.as_view(), name='comment-update'),
     path('comments/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment_delete'),
 
 ]
