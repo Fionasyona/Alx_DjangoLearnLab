@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import Post, Comment
 from .forms import RegisterForm, ProfileForm, PostForm, CommentForm
+from django.db.models import Q
 from taggit.models import Tag
 
 # List all posts (public)
@@ -114,6 +115,21 @@ def register(request):
     else:
         form = RegisterForm()
     return render(request, "auth/register.html", {"form": form})
+def search_posts(request):
+    query = request.GET.get('q', '')
+    results = Post.objects.all()
+
+    if query:
+        results = results.filter(
+            Q(title__icontains=query) |       # ✅ match title
+            Q(content__icontains=query) |     # ✅ match content
+            Q(tags__name__icontains=query)    # ✅ match tag name
+        ).distinct()
+
+    return render(request, 'search_results.html', {
+        'query': query,
+        'results': results
+    })
 
 # User profile
 @login_required
