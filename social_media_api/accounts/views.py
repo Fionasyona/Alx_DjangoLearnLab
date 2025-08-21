@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from .models import User
 from rest_framework.authtoken.models import Token
 from .serializers import UserSerializer, RegisterSerializer, LoginSerializer
+from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -41,5 +43,50 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         def get_object(self):
             return self.request.user
    
-       
 
+class FollowUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+        target = get_object_or_404(User, id=user_id)
+        if target == request.user:
+            return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        request.user.following.add(target)
+        return Response({
+            "detail": f"You are now following {target.username}.",
+            "you_follow_count": request.user.following.count(),
+            "their_follower_count": target.followers.count(),
+        }, status=status.HTTP_200_OK)
+
+
+class UnfollowUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+        target = get_object_or_404(User, id=user_id)
+        if target == request.user:
+            return Response({"detail": "You cannot unfollow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        request.user.following.remove(target)
+        return Response({
+            "detail": f"You unfollowed {target.username}.",
+            "you_follow_count": request.user.following.count(),
+            "their_follower_count": target.followers.count(),
+        }, status=status.HTTP_200_OK)
+
+
+class ListFollowingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        users = request.user.following.all()
+        return Response(UserSerializer(users, many=True).data)
+
+
+class ListFollowersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        users = request.user.followers.all()
+        return Response(UserSerializer(users, many=True).data)       
