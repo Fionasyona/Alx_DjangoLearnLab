@@ -1,9 +1,8 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
-
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 from .permissions import IsOwnerOrReadOnly
@@ -20,28 +19,13 @@ class PostViewSet(viewsets.ModelViewSet):
     ordering_fields = ["created_at", "updated_at"]
 
     def perform_create(self, serializer):
-        """Ensure logged-in user is the author of the post"""
         serializer.save(author=self.request.user)
 
-    @action(detail=True, methods=["get"], url_path="comments")
-    def list_comments(self, request, pk=None):
-        """List comments belonging to this post"""
-        post = self.get_object()
-        qs = post.comments.select_related("author").all()
-
-        page = self.paginate_queryset(qs)
-        if page is not None:
-            serializer = CommentSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = CommentSerializer(qs, many=True)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=["get"], url_path="feed", permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=["get"], url_path="feed", permission_classes=[permissions.IsAuthenticated])
     def feed(self, request):
-        """Posts from users the current user follows"""
-        following_ids = request.user.following.values_list("id", flat=True)
-        qs = Post.objects.filter(author_id__in=following_ids).select_related("author").order_by("-created_at")
+        """Posts from users the current user follows."""
+        following_users = request.user.following.all()
+        qs = Post.objects.filter(author__in=following_users).order_by("-created_at")
 
         page = self.paginate_queryset(qs)
         if page is not None:
@@ -53,7 +37,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.select_related("author", "post").all()
+    queryset = Comment.objects.select_related("post", "author").all()
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     pagination_class = DefaultResultsSetPagination
@@ -62,5 +46,4 @@ class CommentViewSet(viewsets.ModelViewSet):
     ordering_fields = ["created_at", "updated_at"]
 
     def perform_create(self, serializer):
-        """Ensure logged-in user is the author of the comment"""
         serializer.save(author=self.request.user)
