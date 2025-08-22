@@ -3,22 +3,25 @@ from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
-from .models import CustomUser   # ✅ Make sure your models.py defines CustomUser
+from django.contrib.auth import get_user_model  # ✅ FIXED import
 from .serializers import UserSerializer, RegisterSerializer, LoginSerializer
+from notifications.utils import create_notification  # ✅ Ensure this utility exists
+
+User = get_user_model()  # ✅ Always use your AUTH_USER_MODEL
 
 
 class RegisterView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
+    queryset = User.objects.all()
     serializer_class = RegisterSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        token = Token.objects.get(user=user)
+        token, _ = Token.objects.get_or_create(user=user)  # ✅ ensure token creation
         return Response({
             "user": UserSerializer(user).data,
-            "token": user.auth_token.key
+            "token": token.key
         }, status=status.HTTP_201_CREATED)
 
 
@@ -29,7 +32,7 @@ class LoginView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data
-        token, created = Token.objects.get_or_create(user=user)
+        token, _ = Token.objects.get_or_create(user=user)
         return Response({
             "user": UserSerializer(user).data,
             "token": token.key
@@ -37,7 +40,7 @@ class LoginView(generics.GenericAPIView):
 
 
 class ProfileView(generics.RetrieveUpdateAPIView):
-    queryset = CustomUser.objects.all()
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -49,11 +52,20 @@ class FollowUserView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, user_id):
-        target = get_object_or_404(CustomUser.objects.all(), id=user_id)
+        target = get_object_or_404(User, id=user_id)
         if target == request.user:
             return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
 
         request.user.following.add(target)
+
+        # ✅ Create follow notification
+        create_notification(
+            recipient=target,
+            actor=request.user,
+            verb="started following you",
+            target=None
+        )
+
         return Response({
             "detail": f"You are now following {target.username}.",
             "you_follow_count": request.user.following.count(),
@@ -65,7 +77,7 @@ class UnfollowUserView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, user_id):
-        target = get_object_or_404(CustomUser.objects.all(), id=user_id)
+        target = get_object_or_404(User, id=user_id)
         if target == request.user:
             return Response({"detail": "You cannot unfollow yourself."}, status=status.HTTP_400_BAD_REQUEST)
 
