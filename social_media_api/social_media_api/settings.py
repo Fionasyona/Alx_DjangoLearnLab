@@ -98,7 +98,7 @@ DATABASES = {
         ssl_require=False
     )
 }
-
+DATABASES['default']['PORT'] = os.getenv('POSTGRES_PORT', '5432')
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
