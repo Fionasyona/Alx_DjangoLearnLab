@@ -1,10 +1,8 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status, generics
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.views import APIView
-from django.shortcuts import get_object_or_404
-from rest_framework import status
 from rest_framework.response import Response
 from .models import Post, Comment, Like
 from .serializers import PostSerializer, CommentSerializer
@@ -15,6 +13,7 @@ from notifications.utils import create_notification
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.select_related("author").all()
@@ -41,7 +40,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
-    
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.select_related("post", "author").all()
@@ -53,21 +52,22 @@ class CommentViewSet(viewsets.ModelViewSet):
     ordering_fields = ["created_at", "updated_at"]
 
     def perform_create(self, serializer):
-       Comment = serializer.save(author=self.request.user)
-       post = Comment.post
-       if post.author != self.request.user:
-              create_notification(
+        comment = serializer.save(author=self.request.user)
+        post = comment.post
+        if post.author != self.request.user:
+            create_notification(
                 recipient=post.author,
                 actor=self.request.user,
                 verb="commented on your post",
                 target=post,
-              ) 
+            )
+
 
 class LikePostView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        post = get_object_or_404(Post, pk=pk)
+        post = generics.get_object_or_404(Post, pk=pk)  # ✅ using DRF generics
         like, created = Like.objects.get_or_create(user=request.user, post=post)
 
         if not created:
@@ -89,11 +89,12 @@ class UnlikePostView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        post = get_object_or_404(Post, pk=pk)
+        post = generics.get_object_or_404(Post, pk=pk)  # ✅ using DRF generics
         like = Like.objects.filter(user=request.user, post=post).first()
 
         if not like:
             return Response({"detail": "You have not liked this post."}, status=status.HTTP_400_BAD_REQUEST)
 
         like.delete()
-        return Response({"detail": "Post unliked successfully."}, status=status.HTTP_200_OK)              
+        return Response({"detail": "Post unliked successfully."}, status=status.HTTP_200_OK)
+
